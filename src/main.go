@@ -28,8 +28,8 @@ func main() {
 	difference := hash1 ^ hash2
 	fmt.Println(bits.OnesCount64(uint64(difference)))
 
-	// hashedImage := hashedImaged(hash1)
-	// saveImg("hashed.png", hashedImage)
+	hashedImage := hashedImaged(hash1)
+	saveImg("hashed.png", hashedImage)
 }
 
 func hashToByteArray(hash uint64) []uint8 {
@@ -97,16 +97,20 @@ func imgResize(img image.Image, width, height uint) image.Image {
 }
 
 func AHash(img image.Image) uint64 {
+	grayscaled := imgToGrayscale(img)
+	img = grayscaled
+
 	if img.Bounds().Dx() != 8 && img.Bounds().Dy() != 8 {
-		// fmt.Println("Resizing to 8x8")
 		resized := imgResize(img, 8, 8)
 		img = resized
 	}
 
-	// saveImg("resized.png", img)
+	gray, ok := img.(*image.Gray)
 
-	gray := imgToGrayscale(img)
-	// saveImg("gray.png", gray)
+	if !ok {
+		// should never happen, since resize respects grayscale
+		panic("Not grayscale image")
+	}
 
 	avg := average(gray.Pix)
 
@@ -116,15 +120,12 @@ func AHash(img image.Image) uint64 {
 func AHashComputeBits(data []uint8, avg uint8) uint64 {
 	hash := uint64(0)
 
-	for idx, pix := range data {
-		if idx > 0 {
-			hash <<= 1
-		}
+	for _, pix := range data {
+		hash <<= 1
 
 		if pix >= avg {
 			hash |= 0b1
 		}
-		// fmt.Printf("%064b, %03d : %03d\n", hash, avg, pix)
 	}
 
 	return hash

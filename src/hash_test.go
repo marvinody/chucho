@@ -65,7 +65,7 @@ func TestAverageSimple(t *testing.T) {
 			avg: 255,
 		}, {
 			arr: []uint8{3, 2},
-			avg: 2,
+			avg: 3, // round up
 		},
 	}
 
